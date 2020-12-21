@@ -1,0 +1,35 @@
+{% set PKG_NAME = 'arduino-memory' %}
+{% set LIB_NAME = 'Memory' %}
+
+{% if GIT_DESCRIBE_NUMBER > '0' %}
+{% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] + '.post' + GIT_DESCRIBE_NUMBER %}
+{% else %}
+{% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] %}
+{% endif %}
+# source will be downloaded prior to filling in jinja templates
+# Example assumes that this folder has setup.py in it
+source:
+  git_url: ../
+
+package:
+  name: {{ PKG_NAME }}
+  version: {{ GIT_VERSION }}
+
+requirements:
+  build:
+    - python
+    - platformio-helpers >=0.8
+
+build:
+  noarch: generic
+  script:
+    python -c
+      "import os.path; import os; import shutil; import platformio_helpers as pioh;
+      src_dir = os.path.join(os.environ['SRC_DIR'], 'include', 'Arduino', '{{ LIB_NAME }}');
+      install_dir = pioh.conda_arduino_include_path().joinpath('{{ LIB_NAME }}');
+      shutil.copytree(src_dir, install_dir);
+      "
+
+about:
+  home: https://github.com/sci-bots/arduino-memory
+  license: MIT
